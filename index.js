@@ -1,0 +1,152 @@
+const express = require("express")
+const database = require("./database/database")
+const Games = require("./models/Games")
+const cors = require('cors')
+const PORT = 4000 || process.env.PORT
+
+const app = express();
+
+app.use(express.json())
+app.use(express.urlencoded({extend: false}))
+
+app.use(cors())
+
+app.use(express.static('./consumoDeApi'))
+
+database.authenticate().then(
+    console.log("Conexão com o banco de dados feita com sucesso")
+).catch(err => {
+    console.log(err)
+})
+
+// const DB = {
+
+//     games: [
+//         {
+//             id: 23,
+//             title: "Call of Duty MW",
+//             year: 2019,
+//             price: 60
+//         },
+
+//         {
+//             id: 65,
+//             title: "Sea of thieves",
+//             year: 2018,  
+//             price: 48
+//         },
+
+//         {
+//             id: 2,
+//             title: "Minecraft",
+//             year: 2009,
+//             price: 20
+//         }
+//     ]
+// }
+
+app.get("/", (req, res) => {
+
+    res.render("./consumoDeApi/index.html")
+})
+
+app.get("/games", (req, res) => {
+
+    Games.findAll().then(games => {
+
+        res.json(games)
+    }).catch(err => {
+        res.json({message: "Algo deu errado :(", error: err})
+    })
+})
+
+app.get("/game/:id", (req, res) => {
+
+    var id = req.params.id
+
+    if(!isNaN(id)) {
+
+        Games.findOne({where: {id: id}}).then(game => {
+            res.json(game).status(200)
+        }).catch(err => {
+            res.json({message: "Não encontramos esse jogo no nosso sistema :(", error: err})
+        })
+    } else {
+
+        res.json({message: "Não encontramos esse jogo no nosso sistema :("})
+    }
+})
+app.post("/newgame", (req, res) => {
+
+    const {
+        title,
+        year,
+        price     
+    } = req.body
+
+
+    Games.findOne({
+        where: {title: title}
+    }).then(game => {
+        if(game == undefined) {
+            Games.create({title, year,price, createdAt: Date.now()}).then(() => {
+
+                res.json({message: "Dados salvos com sucesso"}).status(200)
+        
+            }).catch(err => {
+                res.json({message: "Não deu certo :(", error: err})
+            })
+        } 
+
+        else {
+            res.json({message: "Game já criado"})
+        }
+    }).catch(err => {
+        res.json({message: "Algo deu errado :(", error: err})
+    })
+
+})
+
+app.delete("/game/:id", (req, res) => {
+    var id = req.params.id
+
+    if(!isNaN(id)) {
+
+        Games.destroy({where: {id: id}}).then(() => {
+
+            res.json({message: "O jogo " + id + " foi excluído"}).status(200)
+        }).catch(err => {
+            res.json({message: "Não foi possível excluir o jogo", erro: err}).status(400)
+        })
+    } else {
+
+        res.json({message: "Não encontramos esse jogo no nosso sistema :("})
+    }
+})
+
+app.put("/game/:id", (req, res) => {
+
+    var id = req.params.id
+
+    const {
+        title,
+        year,
+        price     
+    } = req.body
+    
+    if(!isNaN(id)) {
+        Games.update({title, year,price, createdAt: Date.now()},{where: {id: id}}).then(game => {
+
+            res.json({message: "Jogo atualizado com  sucesso"}).status(200)
+
+        }).catch(err => {
+            res.json({message: "Não foi possivel atualizar o jogo :(", erro: err}).status(400)
+        })
+    }else {
+
+        res.json({message: "Esse ID não existe no nosso sistema"}).status(404)
+    }
+
+})
+
+app.listen(PORT, () => { console.log("Server is running")})

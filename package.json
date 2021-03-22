@@ -1,0 +1,24 @@
+{
+  "name": "apidegames",
+  "version": "1.0.0",
+  "description": "An simple game api with crud http methods",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js"
+  },
+  "keywords": [],
+  "author": "Livrodjx",
+  "license": "ISC",
+  "dependencies": {
+
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "mysql2": "^2.2.5",
+    "sequelize": "^6.5.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7",
+    "sequelize-cli": "^6.2.0"
+  }
+}

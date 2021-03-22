@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+        <title>Consumo de API</title>
+        <style>
+            
+            .form-control {
+                width: 50% !important;
+            }
+        </style>
+    </head>
+    <body>
+        
+        <div class="container">
+            <hr>
+            <h4>Lista de Games</h4>
+            <ul id="games" class="list-group"></ul>
+
+            <hr>
+            <h4>Novo game</h4><br>
+            <input class="form-control" type="text" name="title" id="title" placeholder="Titulo"><br>
+            <input class="form-control" type="number" name="year" id="year" placeholder="Ano"><br>
+            <input class="form-control" type="number" name="price" id="price" placeholder="Preço"><br>
+            <button class="btn btn-primary form-control" onclick="createGame()">Criar</button>
+
+            <hr>
+            <h4>Editar game</h4><br>
+            <input type="hidden" name="id" id="id">
+            <input class="form-control" type="text" name="title" id="editTitle" placeholder="Titulo"><br>
+            <input class="form-control" type="number" name="year" id="editYear" placeholder="Ano"><br>
+            <input class="form-control"type="number" name="price" id="editPrice" placeholder="Preço"><br>
+            <button class="btn btn-info form-control" onclick="editGame()">Editar</button><br><br>
+        </div>
+    
+
+    </body>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+
+        function createGame() {
+            var titleInput = document.getElementById('title')
+            var yearInput = document.getElementById('year')
+            var priceInput = document.getElementById('price')
+
+            var game = {
+                title: titleInput.value,
+                year: yearInput.value,
+                price: priceInput.value
+            }
+
+            axios.post("http://localhost:4000/newgame", game).then(response => {
+                
+                if(response.status == 200) {
+                    alert("Game cadastrado")
+
+                    window.location.reload()
+                }
+            }).catch(err => {
+                console.log(err)
+            })
+        }
+
+        function deleteGame(listItem) {
+
+            var confirm = window.confirm("Tem certeza que deseja excluir ?")
+
+            if(confirm) {
+                var id = listItem.getAttribute("data-id")
+
+                axios.delete("http://localhost:4000/game/" + id).then(response => {
+
+                    if(response.status == 200) {
+
+                        alert("Game excluído com sucesso")
+
+                        window.location.reload()
+                    }
+
+                }).catch(err => {
+                    console.log(err)
+                })
+            }
+            
+    
+        }
+
+        function loadForm(listItem) {
+
+            window.scroll(0, 270)
+            var id = listItem.getAttribute("data-id")
+            var currentTitle = listItem.getAttribute("data-title")
+            var currentYear = listItem.getAttribute("data-year")
+            var currentPrice = listItem.getAttribute("data-price")
+
+            var idValue = document.getElementById("id")
+            var titleInput = document.getElementById('editTitle')
+            var yearInput = document.getElementById('editYear')
+            var priceInput = document.getElementById('editPrice')
+
+            idValue.value = id
+            titleInput.value = currentTitle
+            yearInput.value = currentYear
+            priceInput.value = currentPrice
+
+        }
+
+        function editGame() {
+           
+            var id = document.getElementById("id").value
+            var titleInput = document.getElementById('editTitle').value
+            var yearInput = document.getElementById('editYear').value
+            var priceInput = document.getElementById('editPrice').value
+
+            
+            var editedGame = {
+
+                title: titleInput,
+                year: yearInput,
+                price: priceInput
+            }
+
+           
+            axios.put("http://localhost:4000/game/" + id, editedGame).then(response => {
+
+                if(response.status == 200) {
+                    alert("Game editado com sucesso")
+
+                    window.location.reload()
+                    window.scroll(0, 0)
+                }
+            }).catch(err => {
+                console.log(err)
+            })
+        }
+
+        axios.get("http://localhost:4000/games").then(response => {
+            
+            var games = response.data
+            var list = document.querySelector('ul#games')
+
+        
+            games.forEach(game => {
+                var item = document.createElement('li')
+
+                item.setAttribute('data-id', game.id)
+                item.setAttribute('data-title', game.title)
+                item.setAttribute('data-year', game.year)
+                item.setAttribute('data-price', game.price)
+
+                item.classList.add("list-group-item")
+                item.innerHTML = `${game.title} - ${game.year} - R$ ${game.price}`
+
+                var deleteBtn = document.createElement("button")
+                
+                deleteBtn.innerHTML = "Deletar"
+                deleteBtn.classList.add("btn")
+                deleteBtn.classList.add("btn-danger")
+                deleteBtn.style.marginLeft = "30px"
+                deleteBtn.addEventListener("click", function() {
+                    deleteGame(item)
+                })
+
+                var editBtn = document.createElement("button")
+                editBtn.innerHTML = "Editar"
+                editBtn.classList.add("btn")
+                editBtn.classList.add("btn-secondary")
+                editBtn.addEventListener("click", function() {
+                    loadForm(item)
+                })
+
+                item.appendChild(deleteBtn)
+                item.appendChild(editBtn)
+                list.appendChild(item)
+            })
+
+            
+        }).catch(err => {
+            console.log(err)
+        })
+        
+
+
+
+    </script>
+</html>
