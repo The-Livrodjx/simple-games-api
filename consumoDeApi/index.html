@@ -16,6 +16,15 @@
     <body>
         
         <div class="container">
+
+            <hr>
+            <h4>Login</h4>
+
+            <input class="form-control" type="text" name="email" id="email" placeholder="example@hotmail.com"><br>
+            <input class="form-control" type="text" name="password" id="password" placeholder="*****"><br>
+            <button class="btn btn-primary form-control" onclick="login()">Entrar</button>
+
+
             <hr>
             <h4>Lista de Games</h4>
             <ul id="games" class="list-group"></ul>
@@ -44,6 +53,41 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
+
+
+        var axiosConfig = {
+
+            headers: {
+                Authorization: "Bearer " + localStorage.getItem('token')
+            }
+        }
+        
+        function login() {
+
+            var email = document.getElementById("email").value
+            var password = document.getElementById("password").value
+
+            
+                
+            axios.post("http://localhost:4000/auth", {
+                email,
+                password
+            }).then(res => {
+                
+                alert("Logado com sucesso")
+        
+                localStorage.setItem("token", res.data.token)
+
+                window.location.reload()
+            }).catch(err => {
+
+                alert("Login inválido")
+            })
+        
+    
+        }
+
+
 
         function createGame() {
             var titleInput = document.getElementById('title')
@@ -141,7 +185,7 @@
             })
         }
 
-        axios.get("http://localhost:4000/games").then(response => {
+        axios.get("http://localhost:4000/games", axiosConfig).then(response => {
             
             var games = response.data
             var list = document.querySelector('ul#games')

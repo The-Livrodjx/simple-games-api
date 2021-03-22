@@ -1,9 +1,13 @@
 const express = require("express")
 const database = require("./database/database")
 const Games = require("./models/Games")
+const Users = require("./models/Users")
 const cors = require('cors')
+const jwt = require("jsonwebtoken")
+const auth = require('./middlewares/auth')
 const PORT = 4000 || process.env.PORT
 
+const JWTSecret = "mgfanmfkamslkmfalkmfakmfaslknfajna"
 const app = express();
 
 app.use(express.json())
@@ -45,13 +49,14 @@ database.authenticate().then(
 //     ]
 // }
 
-app.get("/", (req, res) => {
+app.get("/", auth,(req, res) => {
 
     res.render("./consumoDeApi/index.html")
 })
 
-app.get("/games", (req, res) => {
+app.get("/games", auth, (req, res) => {
 
+    // var user = req.loggedUser
     Games.findAll().then(games => {
 
         res.json(games)
@@ -122,6 +127,68 @@ app.delete("/game/:id", (req, res) => {
 
         res.json({message: "Não encontramos esse jogo no nosso sistema :("})
     }
+})
+
+app.post("/auth", (req, res) => {
+
+    const {email, password} = req.body
+
+    if(email != undefined) {
+
+        Users.findOne({where: {email: email}}).then(user => {
+            
+            if(user != undefined) {
+
+                if(user.password == password) {
+
+                    jwt.sign({id: user.id, email: user.email}, JWTSecret, {expiresIn: '48h'}, (err, token) => {
+
+                        if(err) {
+
+                            res.status(400)
+                            res.json({message: "Falha interna", error: err})
+                        }
+                        else {
+                            res.status(200)
+                            res.json({token})
+                        }
+                    })
+
+                }
+
+                else {
+                    res.status(400)
+                    res.json({message: "Email ou senha inválidos"})
+                }
+            }else {
+
+                res.status(400)
+                res.json({message: "Email ou senha inválidos"})
+            }
+
+        }).catch(err => {
+
+            res.status = 400
+            res.json({message: "Houve um erro :(", error: err})
+        })
+    }
+})
+
+
+app.post('/newuser', (req, res) => {
+
+    const {email, password} = req.body
+
+    Users.create({
+        email,
+        password,
+        createdAt: Date.now()
+    }).then(
+        res.json({message: "Usuário criado com sucesso"}).status(200)
+    ).catch(err => {
+
+        res.json(err)
+    })
 })
 
 app.put("/game/:id", (req, res) => {
