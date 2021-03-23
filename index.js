@@ -1,5 +1,6 @@
 const express = require("express")
 const database = require("./database/database")
+const session = require("express-session")
 const Games = require("./models/Games")
 const Users = require("./models/Users")
 const cors = require('cors')
@@ -22,6 +23,12 @@ database.authenticate().then(
 ).catch(err => {
     console.log(err)
 })
+
+var timeToExpire = (Date.now() + (60 * 60 * 1000))
+app.use(session({
+    secret: "MKVSKGNSDGNÇLKJBDMMÇLKBFD", cookie: { maxAge: timeToExpire}
+}))
+    
 
 // const DB = {
 
@@ -65,7 +72,7 @@ app.get("/games", auth, (req, res) => {
     })
 })
 
-app.get("/game/:id", (req, res) => {
+app.get("/game/:id", auth, (req, res) => {
 
     var id = req.params.id
 
@@ -81,7 +88,7 @@ app.get("/game/:id", (req, res) => {
         res.json({message: "Não encontramos esse jogo no nosso sistema :("})
     }
 })
-app.post("/newgame", (req, res) => {
+app.post("/newgame",auth, (req, res) => {
 
     const {
         title,
@@ -112,7 +119,7 @@ app.post("/newgame", (req, res) => {
 
 })
 
-app.delete("/game/:id", (req, res) => {
+app.delete("/game/:id",auth, (req, res) => {
     var id = req.params.id
 
     if(!isNaN(id)) {
@@ -150,6 +157,7 @@ app.post("/auth", (req, res) => {
                         }
                         else {
                             res.status(200)
+                            req.session.token = token
                             res.json({token})
                         }
                     })
@@ -175,7 +183,7 @@ app.post("/auth", (req, res) => {
 })
 
 
-app.post('/newuser', (req, res) => {
+app.post('/newuser', auth,(req, res) => {
 
     const {email, password} = req.body
 
@@ -191,7 +199,7 @@ app.post('/newuser', (req, res) => {
     })
 })
 
-app.put("/game/:id", (req, res) => {
+app.put("/game/:id",auth, (req, res) => {
 
     var id = req.params.id
 

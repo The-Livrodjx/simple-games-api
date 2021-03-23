@@ -22,7 +22,7 @@
 
             <input class="form-control" type="text" name="email" id="email" placeholder="example@hotmail.com"><br>
             <input class="form-control" type="text" name="password" id="password" placeholder="*****"><br>
-            <button class="btn btn-primary form-control" onclick="login()">Entrar</button>
+            <button class="btn btn-dark form-control" onclick="login()">Entrar</button>
 
 
             <hr>
@@ -61,7 +61,7 @@
                 Authorization: "Bearer " + localStorage.getItem('token')
             }
         }
-        
+
         function login() {
 
             var email = document.getElementById("email").value
@@ -100,7 +100,7 @@
                 price: priceInput.value
             }
 
-            axios.post("http://localhost:4000/newgame", game).then(response => {
+            axios.post("http://localhost:4000/newgame", game, axiosConfig).then(response => {
                 
                 if(response.status == 200) {
                     alert("Game cadastrado")
@@ -119,7 +119,7 @@
             if(confirm) {
                 var id = listItem.getAttribute("data-id")
 
-                axios.delete("http://localhost:4000/game/" + id).then(response => {
+                axios.delete("http://localhost:4000/game/" + id, axiosConfig).then(response => {
 
                     if(response.status == 200) {
 
@@ -138,7 +138,7 @@
 
         function loadForm(listItem) {
 
-            window.scroll(0, 270)
+            window.scroll(0, 370)
             var id = listItem.getAttribute("data-id")
             var currentTitle = listItem.getAttribute("data-title")
             var currentYear = listItem.getAttribute("data-year")
@@ -172,7 +172,7 @@
             }
 
            
-            axios.put("http://localhost:4000/game/" + id, editedGame).then(response => {
+            axios.put("http://localhost:4000/game/" + id, editedGame, axiosConfig).then(response => {
 
                 if(response.status == 200) {
                     alert("Game editado com sucesso")
